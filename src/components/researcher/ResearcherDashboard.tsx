@@ -3,10 +3,6 @@ import QueryResultsCard from './QueryResultsCard';
 import QueryHistoryCard from './QueryHistoryCard';
 import { useState } from 'react';
 
-interface ResearcherDashboardProps {
-  address: string;
-}
-
 export interface QueryResult {
   id: number;
   query: string;
@@ -19,7 +15,7 @@ export interface QueryResult {
   timestamp: string;
 }
 
-export default function ResearcherDashboard({ address }: ResearcherDashboardProps) {
+export default function ResearcherDashboard() {
   const [queryResults, setQueryResults] = useState<QueryResult[]>([]);
 
   const handleQuerySubmit = (result: QueryResult) => {

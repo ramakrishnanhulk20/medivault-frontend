@@ -126,19 +126,19 @@ function App() {
 
       {currentView === 'lender' && walletAddress && (
         <div className="animate-fade-in">
-          <LenderDashboard address={walletAddress} />
+          <LenderDashboard />
         </div>
       )}
 
       {currentView === 'researcher' && walletAddress && (
         <div className="animate-fade-in">
-          <ResearcherDashboard address={walletAddress} />
+          <ResearcherDashboard />
         </div>
       )}
 
       {currentView === 'analytics' && walletAddress && (
         <div className="animate-fade-in">
-          <AnalyticsDashboard address={walletAddress} />
+          <AnalyticsDashboard />
         </div>
       )}
 
