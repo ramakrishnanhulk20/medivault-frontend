@@ -1,5 +1,4 @@
-// Mock blockchain calls for demo/testing
-export const MOCK_MODE = true; // Set to false when real contracts are ready
+export const MOCK_MODE = true;
 
 export async function mockDelay(ms: number = 2000): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -10,7 +9,6 @@ export function generateMockTxHash(): string {
   return `0x${random}${'0'.repeat(64 - random.length)}`;
 }
 
-// Mock storage
 const mockStorage = {
   hasScore: new Set<string>(),
   sharedData: new Set<string>(),
@@ -23,7 +21,7 @@ export const mockContracts = {
     return generateMockTxHash();
   },
 
-  async updateScore(address: string): Promise<string> {
+  async updateScore(_address: string): Promise<string> {
     await mockDelay();
     return generateMockTxHash();
   },
@@ -52,7 +50,7 @@ export const mockContracts = {
 
   async verifyThreshold(): Promise<boolean> {
     await mockDelay();
-    return Math.random() > 0.3; // 70% approval rate
+    return Math.random() > 0.3;
   },
 
   async executeQuery(): Promise<{ txHash: string; patientCount: number; averageAge: number }> {

@@ -25,7 +25,7 @@ export async function executeResearchQuery(
     { value: costInEth }
   );
   
-  const receipt = await tx.wait();
+  await tx.wait();
   
   return {
     txHash: tx.hash,

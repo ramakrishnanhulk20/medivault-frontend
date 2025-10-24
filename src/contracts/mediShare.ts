@@ -5,9 +5,9 @@ import { MOCK_MODE, mockContracts } from './mock';
 
 export async function shareHealthData(
   signer: ethers.Signer,
-  bloodSugar: number,
-  cholesterol: number,
-  bmi: number
+  _bloodSugar: number,
+  _cholesterol: number,
+  _bmi: number
 ): Promise<string> {
   const address = await signer.getAddress();
   

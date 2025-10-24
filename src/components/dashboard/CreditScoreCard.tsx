@@ -14,7 +14,10 @@ export default function CreditScoreCard() {
 
   const checkScoreStatus = async () => {
     try {
-      if (!window.ethereum) return;
+      if (!window.ethereum) {
+        setIsLoading(false);
+        return;
+      }
       
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
@@ -34,6 +37,7 @@ export default function CreditScoreCard() {
       setIsProcessing(true);
       toast.info('Initializing...', 'Encrypting your credit score on blockchain');
 
+      if (!window.ethereum) throw new Error('Please install MetaMask');
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       
@@ -56,6 +60,7 @@ export default function CreditScoreCard() {
       setIsProcessing(true);
       toast.info('Updating...', 'Updating your encrypted credit score');
 
+      if (!window.ethereum) throw new Error('Please install MetaMask');
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       
