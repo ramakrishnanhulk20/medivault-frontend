@@ -1,32 +1,89 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from '../../utils/toast';
+import { ethers } from 'ethers';
+import { initializeScore, updateScore, hasScore } from '../../contracts/mediScore';
 
 export default function CreditScoreCard() {
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    checkScoreStatus();
+  }, []);
+
+  const checkScoreStatus = async () => {
+    try {
+      if (!window.ethereum) return;
+      
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const address = await signer.getAddress();
+      
+      const scoreExists = await hasScore(provider, address);
+      setIsInitialized(scoreExists);
+    } catch (error) {
+      console.error('Error checking score:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInitialize = async () => {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsInitialized(true);
-    setIsLoading(false);
-    
-    // Show success notification
-    toast.success('Score Initialized!', 'Your credit score has been created and encrypted', '0x1234...5678');
+    try {
+      setIsProcessing(true);
+      toast.info('Initializing...', 'Encrypting your credit score on blockchain');
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      
+      const txHash = await initializeScore(signer);
+      
+      setIsInitialized(true);
+      toast.success('Score Initialized!', 'Your credit score has been created and encrypted', txHash);
+      
+      await checkScoreStatus();
+    } catch (error: any) {
+      console.error('Error initializing score:', error);
+      toast.error('Initialization Failed', error.message || 'Please try again');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleUpdate = async () => {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsLoading(false);
-    
-    // Show success notification
-    toast.success('Score Updated!', 'Your health credit score has been refreshed');
+    try {
+      setIsProcessing(true);
+      toast.info('Updating...', 'Updating your encrypted credit score');
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      
+      const txHash = await updateScore(signer);
+      
+      toast.success('Score Updated!', 'Your health credit score has been refreshed', txHash);
+    } catch (error: any) {
+      console.error('Error updating score:', error);
+      toast.error('Update Failed', error.message || 'Please try again');
+    } finally {
+      setIsProcessing(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="card">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-slate-200 rounded w-1/2"></div>
+          <div className="h-32 bg-slate-200 rounded"></div>
+          <div className="h-10 bg-slate-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-2xl font-heading font-bold text-slate-900">
@@ -44,7 +101,6 @@ export default function CreditScoreCard() {
       </div>
 
       {!isInitialized ? (
-        /* Not Initialized State */
         <div className="text-center py-12">
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -59,16 +115,16 @@ export default function CreditScoreCard() {
           </p>
           <button
             onClick={handleInitialize}
-            disabled={isLoading}
+            disabled={isProcessing}
             className="btn btn-primary"
           >
-            {isLoading ? (
+            {isProcessing ? (
               <>
                 <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                Initializing...
+                Initializing on Blockchain...
               </>
             ) : (
               'Initialize Score'
@@ -76,9 +132,7 @@ export default function CreditScoreCard() {
           </button>
         </div>
       ) : (
-        /* Initialized State */
         <div>
-          {/* Score Display */}
           <div className="bg-gradient-to-br from-primary-700 to-primary-900 rounded-2xl p-8 text-white mb-6">
             <div className="text-center">
               <div className="flex items-center justify-center space-x-2 mb-4">
@@ -104,13 +158,12 @@ export default function CreditScoreCard() {
                 </div>
                 <div>
                   <p className="text-accent-mint text-xs mb-1">Last Updated</p>
-                  <p className="font-bold text-sm">Just now</p>
+                  <p className="font-bold text-sm">On Chain</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Info Cards */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-success-100 rounded-xl p-4">
               <div className="flex items-center space-x-2 mb-2">
@@ -130,26 +183,24 @@ export default function CreditScoreCard() {
                 </svg>
                 <span className="text-sm font-medium text-slate-900">Updates</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">1</p>
-              <p className="text-xs text-slate-600">Total score updates</p>
+              <p className="text-2xl font-bold text-slate-900">On-Chain</p>
+              <p className="text-xs text-slate-600">Verified on Sepolia</p>
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3">
             <button
               onClick={handleUpdate}
-              disabled={isLoading}
+              disabled={isProcessing}
               className="btn btn-primary flex-1"
             >
-              {isLoading ? 'Updating...' : 'Update Score'}
+              {isProcessing ? 'Updating...' : 'Update Score'}
             </button>
             <button className="btn bg-slate-100 text-slate-700 hover:bg-slate-200">
               View Details
             </button>
           </div>
 
-          {/* Privacy Notice */}
           <div className="mt-6 bg-slate-50 rounded-lg p-4">
             <div className="flex items-start space-x-3">
               <svg className="w-5 h-5 text-primary-700 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

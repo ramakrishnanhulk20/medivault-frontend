@@ -28,26 +28,44 @@ export default function QueryBuilderCard({ onQuerySubmit }: QueryBuilderCardProp
   });
 
   const handleQuery = async () => {
-    setIsQuerying(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    
-    const result: QueryResult = {
-      id: Date.now(),
-      query: `Age ${filters.ageMin}-${filters.ageMax}, BMI ${filters.bmiMin}-${filters.bmiMax}`,
-      patientCount: Math.floor(Math.random() * 100) + 20,
-      averageAge: parseFloat(filters.ageMin) + Math.random() * (parseFloat(filters.ageMax) - parseFloat(filters.ageMin)),
-      averageBloodSugar: 90 + Math.random() * 30,
-      averageCholesterol: 170 + Math.random() * 40,
-      averageBMI: parseFloat(filters.bmiMin) + Math.random() * (parseFloat(filters.bmiMax) - parseFloat(filters.bmiMin)),
-      cost: 25.50,
-      timestamp: new Date().toLocaleString(),
-    };
-    
-    onQuerySubmit(result);
-    setIsQuerying(false);
-    
-    toast.success('Query Executed!', `Found ${result.patientCount} matching patients`, '0xabcd...ef12');
+    try {
+      setIsQuerying(true);
+      toast.info('Executing Query...', 'Running encrypted computation on blockchain');
+      
+      const { ethers } = await import('ethers');
+      const { executeResearchQuery } = await import('../../contracts/mediVault');
+      
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      
+      const queryResult = await executeResearchQuery(
+        signer,
+        parseInt(filters.ageMin),
+        parseInt(filters.ageMax),
+        parseFloat(filters.bmiMin),
+        parseFloat(filters.bmiMax)
+      );
+      
+      const result: QueryResult = {
+        id: Date.now(),
+        query: `Age ${filters.ageMin}-${filters.ageMax}, BMI ${filters.bmiMin}-${filters.bmiMax}`,
+        patientCount: queryResult.patientCount,
+        averageAge: queryResult.averageAge,
+        averageBloodSugar: 90 + Math.random() * 30,
+        averageCholesterol: 170 + Math.random() * 40,
+        averageBMI: parseFloat(filters.bmiMin) + Math.random() * (parseFloat(filters.bmiMax) - parseFloat(filters.bmiMin)),
+        cost: 25.50,
+        timestamp: new Date().toLocaleString(),
+      };
+      
+      onQuerySubmit(result);
+      toast.success('Query Executed!', `Found ${result.patientCount} matching patients`, queryResult.txHash);
+    } catch (error: any) {
+      console.error('Error executing query:', error);
+      toast.error('Query Failed', error.message || 'Please try again');
+    } finally {
+      setIsQuerying(false);
+    }
   };
 
   return (

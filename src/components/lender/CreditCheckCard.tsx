@@ -17,23 +17,37 @@ export default function CreditCheckCard() {
       return;
     }
     
-    toast.info('Verification Started', 'Checking credit score on blockchain...');
-    
-    setIsChecking(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const meetsThreshold = Math.random() > 0.3;
-    
-    setResult({
-      meetsThreshold,
-      timestamp: new Date().toLocaleString(),
-    });
-    setIsChecking(false);
-    
-    if (meetsThreshold) {
-      toast.success('Threshold Met!', `Patient meets the ${threshold}+ requirement`, '0x9876...4321');
-    } else {
-      toast.error('Threshold Not Met', `Patient does not meet the ${threshold}+ requirement`);
+    try {
+      toast.info('Verification Started', 'Checking credit score on blockchain...');
+      
+      setIsChecking(true);
+
+      const { ethers } = await import('ethers');
+      const { verifyThreshold } = await import('../../contracts/mediScore');
+      
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      
+      const meetsThreshold = await verifyThreshold(
+        provider,
+        patientAddress,
+        parseInt(threshold)
+      );
+      
+      setResult({
+        meetsThreshold,
+        timestamp: new Date().toLocaleString(),
+      });
+      
+      if (meetsThreshold) {
+        toast.success('Threshold Met!', `Patient meets the ${threshold}+ requirement`);
+      } else {
+        toast.error('Threshold Not Met', `Patient does not meet the ${threshold}+ requirement`);
+      }
+    } catch (error: any) {
+      console.error('Error verifying threshold:', error);
+      toast.error('Verification Failed', error.message || 'Please try again');
+    } finally {
+      setIsChecking(false);
     }
   };
 

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from '../../utils/toast';
 
 export default function DataSharingCard() {
   const [isSharing, setIsSharing] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
     bloodSugar: '',
     cholesterol: '',
@@ -12,6 +13,33 @@ export default function DataSharingCard() {
     consent1: false,
     consent2: false,
   });
+
+  useEffect(() => {
+    checkSharingStatus();
+  }, []);
+
+  const checkSharingStatus = async () => {
+    try {
+      const { ethers } = await import('ethers');
+      const { isDataShared } = await import('../../contracts/mediShare');
+      
+      if (!window.ethereum) {
+        setIsLoading(false);
+        return;
+      }
+      
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const address = await signer.getAddress();
+      
+      const shared = await isDataShared(provider, address);
+      setIsSharing(shared);
+    } catch (error) {
+      console.error('Error checking sharing status:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleStartSharing = () => {
     setShowForm(true);
@@ -26,29 +54,68 @@ export default function DataSharingCard() {
       return;
     }
 
-    setIsSubmitting(true);
-    
-    // Simulate encryption and blockchain submission
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    
-    setIsSharing(true);
-    setShowForm(false);
-    setIsSubmitting(false);
-    
-    toast.success('Data Shared Successfully!', 'Your encrypted health data is now available for research', '0xabcd...ef12');
+    try {
+      setIsSubmitting(true);
+      toast.info('Encrypting Data...', 'Encrypting your health metrics with FHE');
+
+      const { ethers } = await import('ethers');
+      const { shareHealthData } = await import('../../contracts/mediShare');
+      
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      
+      const txHash = await shareHealthData(
+        signer,
+        parseFloat(formData.bloodSugar),
+        parseFloat(formData.cholesterol),
+        parseFloat(formData.bmi)
+      );
+      
+      setIsSharing(true);
+      setShowForm(false);
+      toast.success('Data Shared Successfully!', 'Your encrypted health data is now available for research', txHash);
+    } catch (error: any) {
+      console.error('Error sharing data:', error);
+      toast.error('Sharing Failed', error.message || 'Please try again');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleOptOut = () => {
-    toast.warning('Opt Out Confirmation', 'Are you sure you want to stop sharing data?');
-    setTimeout(() => {
+  const handleOptOut = async () => {
+    try {
+      toast.warning('Opt Out Confirmation', 'Removing your data from the marketplace...');
+      
+      const { ethers } = await import('ethers');
+      const { optOutFromSharing } = await import('../../contracts/mediShare');
+      
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      
+      const txHash = await optOutFromSharing(signer);
+      
       setIsSharing(false);
-      toast.info('Sharing Stopped', 'Your data is no longer available for research');
-    }, 1500);
+      toast.info('Sharing Stopped', 'Your data is no longer available for research', txHash);
+    } catch (error: any) {
+      console.error('Error opting out:', error);
+      toast.error('Opt Out Failed', error.message || 'Please try again');
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="card">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-slate-200 rounded w-1/2"></div>
+          <div className="h-32 bg-slate-200 rounded"></div>
+          <div className="h-10 bg-slate-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card animate-fade-in">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-2xl font-heading font-bold text-slate-900">
@@ -66,9 +133,7 @@ export default function DataSharingCard() {
       </div>
 
       {!isSharing && !showForm && (
-        /* Not Sharing State */
         <div>
-          {/* Status Card */}
           <div className="bg-slate-50 rounded-xl p-6 mb-6 text-center">
             <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -83,7 +148,6 @@ export default function DataSharingCard() {
             </p>
           </div>
 
-          {/* Benefits */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-success-50 rounded-lg p-4">
               <div className="text-2xl mb-2">💰</div>
@@ -97,7 +161,6 @@ export default function DataSharingCard() {
             </div>
           </div>
 
-          {/* CTA */}
           <button
             onClick={handleStartSharing}
             className="btn btn-primary w-full"
@@ -105,7 +168,6 @@ export default function DataSharingCard() {
             Start Sharing Data
           </button>
 
-          {/* Privacy Note */}
           <div className="mt-4 text-xs text-slate-500 text-center">
             All data is encrypted and anonymized. You maintain full control.
           </div>
@@ -113,9 +175,7 @@ export default function DataSharingCard() {
       )}
 
       {showForm && (
-        /* Data Sharing Form */
         <form onSubmit={handleSubmit}>
-          {/* Info Banner */}
           <div className="bg-primary-50 rounded-lg p-4 mb-6">
             <div className="flex items-start space-x-3">
               <svg className="w-5 h-5 text-primary-700 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -132,7 +192,6 @@ export default function DataSharingCard() {
             </div>
           </div>
 
-          {/* Health Metrics */}
           <div className="space-y-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -178,7 +237,6 @@ export default function DataSharingCard() {
             </div>
           </div>
 
-          {/* Consent Checkboxes */}
           <div className="space-y-3 mb-6">
             <label className="flex items-start space-x-3">
               <input
@@ -204,7 +262,6 @@ export default function DataSharingCard() {
             </label>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3">
             <button
               type="button"
@@ -239,9 +296,7 @@ export default function DataSharingCard() {
       )}
 
       {isSharing && (
-        /* Currently Sharing State */
         <div>
-          {/* Status Card */}
           <div className="bg-gradient-to-br from-success-600 to-success-700 rounded-xl p-6 text-white mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -271,7 +326,6 @@ export default function DataSharingCard() {
             </div>
           </div>
 
-          {/* Actions */}
           <button
             onClick={handleOptOut}
             className="btn bg-error-100 text-error-600 hover:bg-error-200 w-full"
@@ -279,7 +333,6 @@ export default function DataSharingCard() {
             Opt Out of Sharing
           </button>
 
-          {/* Note */}
           <p className="text-xs text-slate-500 text-center mt-4">
             You can stop sharing your data at any time without penalty
           </p>
