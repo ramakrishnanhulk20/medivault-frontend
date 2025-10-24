@@ -1,14 +1,5 @@
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
-interface ToastEvent extends CustomEvent {
-  detail: {
-    type: ToastType;
-    title: string;
-    message: string;
-    txHash?: string;
-  };
-}
-
 export const toast = {
   success: (title: string, message: string, txHash?: string) => {
     window.dispatchEvent(
@@ -34,10 +25,10 @@ export const toast = {
     );
   },
   
-  info: (title: string, message: string) => {
+  info: (title: string, message: string, txHash?: string) => {
     window.dispatchEvent(
       new CustomEvent('show-toast', {
-        detail: { type: 'info', title, message },
+        detail: { type: 'info', title, message, txHash },
       })
     );
   },
