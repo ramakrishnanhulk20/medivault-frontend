@@ -1,5 +1,3 @@
-type ToastType = 'success' | 'error' | 'warning' | 'info';
-
 export const toast = {
   success: (title: string, message: string, txHash?: string) => {
     window.dispatchEvent(
