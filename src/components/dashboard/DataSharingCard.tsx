@@ -61,6 +61,7 @@ export default function DataSharingCard() {
       const { ethers } = await import('ethers');
       const { shareHealthData } = await import('../../contracts/mediShare');
       
+      if (!window.ethereum) throw new Error('Please install MetaMask');
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       
@@ -89,6 +90,7 @@ export default function DataSharingCard() {
       const { ethers } = await import('ethers');
       const { optOutFromSharing } = await import('../../contracts/mediShare');
       
+      if (!window.ethereum) throw new Error('Please install MetaMask');
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       

@@ -35,6 +35,7 @@ export default function QueryBuilderCard({ onQuerySubmit }: QueryBuilderCardProp
       const { ethers } = await import('ethers');
       const { executeResearchQuery } = await import('../../contracts/mediVault');
       
+      if (!window.ethereum) throw new Error('Please install MetaMask');
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       

@@ -25,6 +25,7 @@ export default function CreditCheckCard() {
       const { ethers } = await import('ethers');
       const { verifyThreshold } = await import('../../contracts/mediScore');
       
+      if (!window.ethereum) throw new Error('Please install MetaMask');
       const provider = new ethers.BrowserProvider(window.ethereum);
       
       const meetsThreshold = await verifyThreshold(
