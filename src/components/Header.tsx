@@ -4,16 +4,6 @@ interface HeaderProps {
   onWalletConnect: (address: string) => void;
 }
 
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string }) => Promise<unknown>;
-      on: (event: string, callback: (accounts: string[]) => void) => void;
-      removeListener: (event: string, callback: (accounts: string[]) => void) => void;
-    };
-  }
-}
-
 export default function Header({ onWalletConnect }: HeaderProps) {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [isConnecting, setIsConnecting] = useState(false);
@@ -27,9 +17,9 @@ export default function Header({ onWalletConnect }: HeaderProps) {
       try {
         const accounts = await window.ethereum.request({
           method: 'eth_accounts',
-        }) as string[] | undefined;
+        }) as string[];
 
-        if (accounts && accounts.length > 0) {
+        if (accounts.length > 0) {
           setWalletAddress(accounts[0]);
           onWalletConnect(accounts[0]);
         }
@@ -51,21 +41,23 @@ export default function Header({ onWalletConnect }: HeaderProps) {
       
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts',
-      }) as string[] | undefined;
+      }) as string[];
 
-      if (accounts && accounts.length > 0) {
+      if (accounts.length > 0) {
         setWalletAddress(accounts[0]);
         onWalletConnect(accounts[0]);
         
-        window.ethereum.on('accountsChanged', (accounts: string[]) => {
-          if (accounts.length > 0) {
-            setWalletAddress(accounts[0]);
-            onWalletConnect(accounts[0]);
-          } else {
-            setWalletAddress('');
-            onWalletConnect('');
-          }
-        });
+        if (window.ethereum.on) {
+          window.ethereum.on('accountsChanged', (accounts: string[]) => {
+            if (accounts.length > 0) {
+              setWalletAddress(accounts[0]);
+              onWalletConnect(accounts[0]);
+            } else {
+              setWalletAddress('');
+              onWalletConnect('');
+            }
+          });
+        }
       }
     } catch (error) {
       console.error('Error connecting wallet:', error);
