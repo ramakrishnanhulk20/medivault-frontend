@@ -1,9 +1,8 @@
-// Real ABIs matching your deployed contracts
-
 export const MEDISCORE_ABI = [
   {
     "inputs": [
-      {"internalType": "euint8", "name": "_encryptedScore", "type": "uint256"}
+      {"internalType": "bytes", "name": "inputScore", "type": "bytes"},
+      {"internalType": "bytes", "name": "inputProof", "type": "bytes"}
     ],
     "name": "storeHealthScore",
     "outputs": [],
@@ -12,7 +11,8 @@ export const MEDISCORE_ABI = [
   },
   {
     "inputs": [
-      {"internalType": "euint8", "name": "_newScore", "type": "uint256"}
+      {"internalType": "bytes", "name": "inputScore", "type": "bytes"},
+      {"internalType": "bytes", "name": "inputProof", "type": "bytes"}
     ],
     "name": "updateScore",
     "outputs": [],
@@ -22,7 +22,7 @@ export const MEDISCORE_ABI = [
   {
     "inputs": [],
     "name": "getMyScore",
-    "outputs": [{"internalType": "euint8", "name": "", "type": "uint256"}],
+    "outputs": [{"internalType": "euint64", "name": "", "type": "uint256"}],
     "stateMutability": "view",
     "type": "function"
   },
@@ -48,13 +48,6 @@ export const MEDISCORE_ABI = [
     ],
     "name": "checkQualification",
     "outputs": [{"internalType": "ebool", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "protocolId",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
     "stateMutability": "view",
     "type": "function"
   }

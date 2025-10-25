@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 import { CONTRACTS } from './config';
 import { MEDISCORE_ABI } from './abi';
 import { MOCK_MODE, mockContracts } from './mock';
+import { encryptUint64 } from './fhe';
 
 export async function initializeScore(signer: ethers.Signer): Promise<string> {
   const address = await signer.getAddress();
@@ -10,10 +11,14 @@ export async function initializeScore(signer: ethers.Signer): Promise<string> {
     return await mockContracts.initializeScore(address);
   }
   
+  const provider = signer.provider as ethers.BrowserProvider;
   const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, signer);
-  const fakeEncryptedScore = 750;
   
-  const tx = await contract.storeHealthScore(fakeEncryptedScore);
+  // Encrypt the score using FHE
+  const scoreValue = 750;
+  const encrypted = await encryptUint64(scoreValue, provider);
+  
+  const tx = await contract.storeHealthScore(encrypted.data, encrypted.proof);
   await tx.wait();
   return tx.hash;
 }
@@ -25,10 +30,13 @@ export async function updateScore(signer: ethers.Signer): Promise<string> {
     return await mockContracts.updateScore(address);
   }
   
+  const provider = signer.provider as ethers.BrowserProvider;
   const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, signer);
-  const newScore = 780;
   
-  const tx = await contract.updateScore(newScore);
+  const newScore = 780;
+  const encrypted = await encryptUint64(newScore, provider);
+  
+  const tx = await contract.updateScore(encrypted.data, encrypted.proof);
   await tx.wait();
   return tx.hash;
 }
