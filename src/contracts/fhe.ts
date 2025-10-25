@@ -1,28 +1,35 @@
-import { initFhevm, createInstance } from 'fhevmjs';
+import { initFhevm, createInstance, FhevmInstance } from 'fhevmjs';
 import { ethers } from 'ethers';
 
-let fhevmInstance: any = null;
+let fhevmInstance: FhevmInstance | null = null;
 
-export async function initializeFHE(provider: ethers.BrowserProvider) {
+export async function initializeFHE(provider: ethers.BrowserProvider): Promise<FhevmInstance> {
   if (fhevmInstance) return fhevmInstance;
 
-  // Initialize fhEVM
   await initFhevm();
   
   const network = await provider.getNetwork();
-  const publicKey = await provider.call({
-    to: '0x0000000000000000000000000000000000000044', // FHE public key contract
-    data: '0x',
-  });
+  
+  try {
+    const publicKeyResponse = await provider.call({
+      to: '0x0000000000000000000000000000000000000044',
+      data: '0x',
+    });
+    
+    const publicKeyBytes = ethers.getBytes(publicKeyResponse);
 
-  fhevmInstance = await createInstance({
-    chainId: Number(network.chainId),
-    networkUrl: 'https://rpc.sepolia.org',
-    gatewayUrl: 'https://gateway.sepolia.zama.ai',
-    publicKey: publicKey,
-  });
+    fhevmInstance = await createInstance({
+      chainId: Number(network.chainId),
+      networkUrl: 'https://rpc.sepolia.org',
+      gatewayUrl: 'https://gateway.sepolia.zama.ai',
+      publicKey: publicKeyBytes,
+    });
 
-  return fhevmInstance;
+    return fhevmInstance;
+  } catch (error) {
+    console.error('FHE initialization failed:', error);
+    throw error;
+  }
 }
 
 export async function encryptUint8(value: number, provider: ethers.BrowserProvider) {
