@@ -56,27 +56,32 @@ export const MEDISCORE_ABI = [
 export const MEDISHARE_ABI = [
   {
     "inputs": [
-      {"internalType": "euint32", "name": "_bloodSugar", "type": "uint256"},
-      {"internalType": "euint32", "name": "_cholesterol", "type": "uint256"},
-      {"internalType": "euint32", "name": "_bmi", "type": "uint256"}
+      {"internalType": "externalEuint64", "name": "inputBloodSugar", "type": "bytes"},
+      {"internalType": "bytes", "name": "bloodSugarProof", "type": "bytes"},
+      {"internalType": "externalEuint64", "name": "inputCholesterol", "type": "bytes"},
+      {"internalType": "bytes", "name": "cholesterolProof", "type": "bytes"},
+      {"internalType": "externalEuint64", "name": "inputBmi", "type": "bytes"},
+      {"internalType": "bytes", "name": "bmiProof", "type": "bytes"}
     ],
-    "name": "shareData",
+    "name": "shareHealthData",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      {"internalType": "address", "name": "user", "type": "address"}
+      {"internalType": "address", "name": "patient", "type": "address"}
     ],
-    "name": "isDataShared",
+    "name": "isPatientSharing",
     "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "optOut",
+    "inputs": [
+      {"internalType": "bool", "name": "consent", "type": "bool"}
+    ],
+    "name": "optInToSharing",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
