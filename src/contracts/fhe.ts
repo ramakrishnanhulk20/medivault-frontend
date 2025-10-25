@@ -1,4 +1,4 @@
-import { createInstance, SepoliaConfig, type FhevmInstance } from '@zama-fhe/relayer-sdk';
+import { createInstance, SepoliaConfig, type FhevmInstance } from 'zama-fhe/relayer-sdk';
 
 let fhevmInstance: FhevmInstance | null = null;
 
