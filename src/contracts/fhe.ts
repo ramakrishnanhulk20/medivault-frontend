@@ -3,12 +3,12 @@ import { ethers } from 'ethers';
 
 let fhevmInstance: FhevmInstance | null = null;
 
-const SEPOLIA_CONFIG = {
+const SEPOLIA_FHE_CONFIG = {
   chainId: 11155111,
-  networkUrl: 'https://rpc.sepolia.org',
-  gatewayUrl: 'https://gateway.sepolia.zama.ai',
-  kmsContractAddress: '0x1364cBBf2cDF5032C47d8226a6f6FBD2AFCDacAC',
-  aclContractAddress: '0x687820221192C5B662b25367F70076A37bc79b6c',
+  networkUrl: 'https://sepolia.infura.io/v3/YOUR_INFURA_KEY', // Or use public RPC
+  gatewayUrl: 'https://gateway.zama.ai', // Correct gateway
+  kmsContractAddress: '0x05fD9B5EFE0a996095f5A5C7c4396A6dD7c1F124',
+  aclContractAddress: '0xFee8407e2f5e3Ee68ad77cAE98c434e637f516e5',
 };
 
 export async function initializeFHE(): Promise<FhevmInstance> {
@@ -16,7 +16,7 @@ export async function initializeFHE(): Promise<FhevmInstance> {
 
   try {
     await initFhevm();
-    fhevmInstance = await createInstance(SEPOLIA_CONFIG);
+    fhevmInstance = await createInstance(SEPOLIA_FHE_CONFIG);
     return fhevmInstance;
   } catch (error) {
     console.error('FHE initialization failed:', error);
