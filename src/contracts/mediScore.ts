@@ -11,12 +11,14 @@ export async function initializeScore(signer: ethers.Signer): Promise<string> {
     return await mockContracts.initializeScore(address);
   }
   
-  const provider = signer.provider as ethers.BrowserProvider;
   const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, signer);
   
-  // Encrypt the score using FHE
   const scoreValue = 750;
-  const encrypted = await encryptUint64(scoreValue, provider);
+  const encrypted = await encryptUint64(
+    scoreValue,
+    CONTRACTS.MEDISCORE,
+    address
+  );
   
   const tx = await contract.storeHealthScore(encrypted.data, encrypted.proof);
   await tx.wait();
@@ -30,11 +32,14 @@ export async function updateScore(signer: ethers.Signer): Promise<string> {
     return await mockContracts.updateScore(address);
   }
   
-  const provider = signer.provider as ethers.BrowserProvider;
   const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, signer);
   
   const newScore = 780;
-  const encrypted = await encryptUint64(newScore, provider);
+  const encrypted = await encryptUint64(
+    newScore,
+    CONTRACTS.MEDISCORE,
+    address
+  );
   
   const tx = await contract.updateScore(encrypted.data, encrypted.proof);
   await tx.wait();
