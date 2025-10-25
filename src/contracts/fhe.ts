@@ -1,23 +1,22 @@
-import { initFhevm, createInstance, FhevmInstance } from 'fhevmjs';
+import { initFhevm, createInstance, type FhevmInstance } from 'fhevmjs';
 import { ethers } from 'ethers';
 
 let fhevmInstance: FhevmInstance | null = null;
+
+const SEPOLIA_CONFIG = {
+  chainId: 11155111,
+  networkUrl: 'https://rpc.sepolia.org',
+  gatewayUrl: 'https://gateway.sepolia.zama.ai',
+  kmsContractAddress: '0x1364cBBf2cDF5032C47d8226a6f6FBD2AFCDacAC',
+  aclContractAddress: '0x687820221192C5B662b25367F70076A37bc79b6c',
+};
 
 export async function initializeFHE(provider: ethers.BrowserProvider): Promise<FhevmInstance> {
   if (fhevmInstance) return fhevmInstance;
 
   try {
     await initFhevm();
-    
-    const network = await provider.getNetwork();
-    const chainId = Number(network.chainId);
-
-    fhevmInstance = await createInstance({
-      chainId: chainId,
-      networkUrl: 'https://rpc.sepolia.org',
-      gatewayUrl: 'https://gateway.sepolia.zama.ai',
-    });
-
+    fhevmInstance = await createInstance(SEPOLIA_CONFIG);
     return fhevmInstance;
   } catch (error) {
     console.error('FHE initialization failed:', error);
@@ -40,7 +39,7 @@ export async function encryptUint64(
     );
     
     input.add64(value);
-    const encrypted = input.encrypt();
+    const encrypted = await input.encrypt();
     
     return {
       data: encrypted.handles[0],
@@ -67,7 +66,7 @@ export async function encryptUint32(
     );
     
     input.add32(value);
-    const encrypted = input.encrypt();
+    const encrypted = await input.encrypt();
     
     return {
       data: encrypted.handles[0],

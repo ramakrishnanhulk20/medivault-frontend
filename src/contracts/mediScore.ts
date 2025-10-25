@@ -11,14 +11,11 @@ export async function initializeScore(signer: ethers.Signer): Promise<string> {
     return await mockContracts.initializeScore(address);
   }
   
+  const provider = signer.provider as ethers.BrowserProvider;
   const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, signer);
   
   const scoreValue = 750;
-  const encrypted = await encryptUint64(
-    scoreValue,
-    CONTRACTS.MEDISCORE,
-    address
-  );
+  const encrypted = await encryptUint64(scoreValue, provider);
   
   const tx = await contract.storeHealthScore(encrypted.data, encrypted.proof);
   await tx.wait();
@@ -32,14 +29,11 @@ export async function updateScore(signer: ethers.Signer): Promise<string> {
     return await mockContracts.updateScore(address);
   }
   
+  const provider = signer.provider as ethers.BrowserProvider;
   const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, signer);
   
   const newScore = 780;
-  const encrypted = await encryptUint64(
-    newScore,
-    CONTRACTS.MEDISCORE,
-    address
-  );
+  const encrypted = await encryptUint64(newScore, provider);
   
   const tx = await contract.updateScore(encrypted.data, encrypted.proof);
   await tx.wait();
