@@ -11,7 +11,7 @@ const SEPOLIA_CONFIG = {
   aclContractAddress: '0x687820221192C5B662b25367F70076A37bc79b6c',
 };
 
-export async function initializeFHE(provider: ethers.BrowserProvider): Promise<FhevmInstance> {
+export async function initializeFHE(): Promise<FhevmInstance> {
   if (fhevmInstance) return fhevmInstance;
 
   try {
@@ -29,7 +29,7 @@ export async function encryptUint64(
   provider: ethers.BrowserProvider
 ) {
   try {
-    const instance = await initializeFHE(provider);
+    const instance = await initializeFHE();
     const signer = await provider.getSigner();
     const userAddress = await signer.getAddress();
     
@@ -56,7 +56,7 @@ export async function encryptUint32(
   provider: ethers.BrowserProvider
 ) {
   try {
-    const instance = await initializeFHE(provider);
+    const instance = await initializeFHE();
     const signer = await provider.getSigner();
     const userAddress = await signer.getAddress();
     
