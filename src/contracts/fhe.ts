@@ -1,4 +1,4 @@
-import { initFhevm, createInstance, FhevmInstance } from 'fhevmjs';
+import { createInstance, type FhevmInstance } from '@zama-fhe/relayer-sdk';
 import { ethers } from 'ethers';
 
 let fhevmInstance: FhevmInstance | null = null;
@@ -6,55 +6,82 @@ let fhevmInstance: FhevmInstance | null = null;
 export async function initializeFHE(provider: ethers.BrowserProvider): Promise<FhevmInstance> {
   if (fhevmInstance) return fhevmInstance;
 
-  await initFhevm();
-  
   const network = await provider.getNetwork();
-  
-  try {
-    const publicKeyResponse = await provider.call({
-      to: '0x0000000000000000000000000000000000000044',
-      data: '0x',
-    });
-    
-    const publicKeyBytes = ethers.getBytes(publicKeyResponse);
+  const chainId = Number(network.chainId);
 
+  try {
     fhevmInstance = await createInstance({
-      chainId: Number(network.chainId),
+      chainId: chainId,
       networkUrl: 'https://rpc.sepolia.org',
       gatewayUrl: 'https://gateway.sepolia.zama.ai',
-      publicKey: publicKeyBytes,
     });
 
     return fhevmInstance;
   } catch (error) {
     console.error('FHE initialization failed:', error);
-    throw error;
+    throw new Error('Failed to initialize FHE. Zama services may be unavailable.');
+  }
+}
+
+export async function encryptUint64(value: number, provider: ethers.BrowserProvider) {
+  try {
+    const instance = await initializeFHE(provider);
+    const signer = await provider.getSigner();
+    const userAddress = await signer.getAddress();
+    
+    const { handles, inputProof } = await instance.createEncryptedInput(
+      '0xec9e4d0d7d96E72DaC4C9d46d4597Cf8E81b4a22',
+      userAddress
+    ).add64(value).encrypt();
+    
+    return {
+      data: handles[0],
+      proof: inputProof,
+    };
+  } catch (error) {
+    console.error('Encryption failed:', error);
+    throw new Error('Failed to encrypt data. Please try again.');
   }
 }
 
 export async function encryptUint8(value: number, provider: ethers.BrowserProvider) {
-  const instance = await initializeFHE(provider);
-  const encrypted = instance.encrypt8(value);
-  return {
-    data: encrypted.data,
-    proof: encrypted.proof,
-  };
+  try {
+    const instance = await initializeFHE(provider);
+    const signer = await provider.getSigner();
+    const userAddress = await signer.getAddress();
+    
+    const { handles, inputProof } = await instance.createEncryptedInput(
+      '0xec9e4d0d7d96E72DaC4C9d46d4597Cf8E81b4a22',
+      userAddress
+    ).add8(value).encrypt();
+    
+    return {
+      data: handles[0],
+      proof: inputProof,
+    };
+  } catch (error) {
+    console.error('Encryption failed:', error);
+    throw new Error('Failed to encrypt data. Please try again.');
+  }
 }
 
 export async function encryptUint32(value: number, provider: ethers.BrowserProvider) {
-  const instance = await initializeFHE(provider);
-  const encrypted = instance.encrypt32(value);
-  return {
-    data: encrypted.data,
-    proof: encrypted.proof,
-  };
-}
-
-export async function encryptUint64(value: number, provider: ethers.BrowserProvider) {
-  const instance = await initializeFHE(provider);
-  const encrypted = instance.encrypt64(value);
-  return {
-    data: encrypted.data,
-    proof: encrypted.proof,
-  };
+  try {
+    const instance = await initializeFHE(provider);
+    const signer = await provider.getSigner();
+    const userAddress = await signer.getAddress();
+    
+    const { handles, inputProof } = await instance.createEncryptedInput(
+      '0xB702CED356e5D21a87D125F0cFdbf2Fc46bd72Ac',
+      userAddress
+    ).add32(value).encrypt();
+    
+    return {
+      data: handles[0],
+      proof: inputProof,
+    };
+  } catch (error) {
+    console.error('Encryption failed:', error);
+    throw new Error('Failed to encrypt data. Please try again.');
+  }
 }
