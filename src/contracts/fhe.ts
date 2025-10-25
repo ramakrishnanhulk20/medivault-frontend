@@ -11,6 +11,7 @@ const SEPOLIA_FHE_CONFIG = {
   aclContractAddress: '0x687820221192C5B662b25367F70076A37bc79b6c',
 };
 
+
 export async function initializeFHE(): Promise<FhevmInstance> {
   if (fhevmInstance) return fhevmInstance;
 
