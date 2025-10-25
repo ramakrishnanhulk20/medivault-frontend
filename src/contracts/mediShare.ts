@@ -1,54 +1,59 @@
 import { ethers } from 'ethers';
 import { CONTRACTS } from './config';
-import { MEDISHARE_ABI } from './abi';
+import { MEDISCORE_ABI } from './abi';
 import { MOCK_MODE, mockContracts } from './mock';
 
-export async function shareHealthData(
-  signer: ethers.Signer,
-  bloodSugar: number,
-  cholesterol: number,
-  bmi: number
-): Promise<string> {
+export async function initializeScore(signer: ethers.Signer): Promise<string> {
   const address = await signer.getAddress();
   
   if (MOCK_MODE) {
-    return await mockContracts.shareData(address);
+    return await mockContracts.initializeScore(address);
   }
   
-  const contract = new ethers.Contract(CONTRACTS.MEDISHARE, MEDISHARE_ABI, signer);
+  const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, signer);
   
-  // Convert to encrypted values (FHE placeholders)
-  const encryptedBloodSugar = Math.floor(bloodSugar);
-  const encryptedCholesterol = Math.floor(cholesterol);
-  const encryptedBMI = Math.floor(bmi * 10); // Store BMI as integer
+  const fakeEncryptedScore = 750;
   
-  const tx = await contract.shareData(
-    encryptedBloodSugar,
-    encryptedCholesterol,
-    encryptedBMI
-  );
+  const tx = await contract.storeHealthScore(fakeEncryptedScore);
   await tx.wait();
   return tx.hash;
 }
 
-export async function isDataShared(provider: ethers.Provider, address: string): Promise<boolean> {
-  if (MOCK_MODE) {
-    return await mockContracts.isDataShared(address);
-  }
-  
-  const contract = new ethers.Contract(CONTRACTS.MEDISHARE, MEDISHARE_ABI, provider);
-  return await contract.isDataShared(address);
-}
-
-export async function optOutFromSharing(signer: ethers.Signer): Promise<string> {
+export async function updateScore(signer: ethers.Signer): Promise<string> {
   const address = await signer.getAddress();
   
   if (MOCK_MODE) {
-    return await mockContracts.optOut(address);
+    return await mockContracts.updateScore(address);
   }
   
-  const contract = new ethers.Contract(CONTRACTS.MEDISHARE, MEDISHARE_ABI, signer);
-  const tx = await contract.optOut();
+  const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, signer);
+  const newScore = 780;
+  
+  const tx = await contract.updateScore(newScore);
   await tx.wait();
   return tx.hash;
+}
+
+export async function hasScore(provider: ethers.Provider, address: string): Promise<boolean> {
+  if (MOCK_MODE) {
+    return await mockContracts.hasScore(address);
+  }
+  
+  const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, provider);
+  return await contract.hasScore(address);
+}
+
+export async function verifyThreshold(
+  provider: ethers.Provider,
+  _patientAddress: string,
+  threshold: number
+): Promise<boolean> {
+  if (MOCK_MODE) {
+    return await mockContracts.verifyThreshold();
+  }
+  
+  const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, provider);
+  const result = await contract.checkQualification(threshold);
+  
+  return result !== null && result !== undefined;
 }
