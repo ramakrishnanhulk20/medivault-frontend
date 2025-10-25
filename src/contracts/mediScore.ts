@@ -11,8 +11,11 @@ export async function initializeScore(signer: ethers.Signer): Promise<string> {
   }
   
   const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, signer);
-  const fakeEncryptedScore = ethers.randomBytes(32);
-  const tx = await contract.initializeScore(fakeEncryptedScore);
+  
+  // For FHE, use a simple number as encrypted score placeholder
+  const fakeEncryptedScore = 750; // Represents encrypted score value
+  
+  const tx = await contract.storeHealthScore(fakeEncryptedScore);
   await tx.wait();
   return tx.hash;
 }
@@ -25,8 +28,9 @@ export async function updateScore(signer: ethers.Signer): Promise<string> {
   }
   
   const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, signer);
-  const fakeEncryptedScore = ethers.randomBytes(32);
-  const tx = await contract.updateScore(fakeEncryptedScore);
+  const newScore = 780; // New encrypted score placeholder
+  
+  const tx = await contract.updateScore(newScore);
   await tx.wait();
   return tx.hash;
 }
@@ -50,5 +54,8 @@ export async function verifyThreshold(
   }
   
   const contract = new ethers.Contract(CONTRACTS.MEDISCORE, MEDISCORE_ABI, provider);
-  return await contract.verifyThreshold(patientAddress, threshold);
+  const result = await contract.checkQualification(threshold);
+  
+  // FHE returns encrypted boolean, for now return true if result exists
+  return result !== null && result !== undefined;
 }

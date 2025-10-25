@@ -1,4 +1,4 @@
-export const MOCK_MODE = true;
+export const MOCK_MODE = false;
 
 export async function mockDelay(ms: number = 2000): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));

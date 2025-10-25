@@ -1,73 +1,86 @@
-// Simplified ABIs - Only the functions we need
+// Real ABIs matching your deployed contracts
 
 export const MEDISCORE_ABI = [
-  // Initialize encrypted score
   {
     "inputs": [
-      {"internalType": "bytes", "name": "encryptedScore", "type": "bytes"}
+      {"internalType": "euint8", "name": "_encryptedScore", "type": "uint256"}
     ],
-    "name": "initializeScore",
+    "name": "storeHealthScore",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
-  // Update score
   {
     "inputs": [
-      {"internalType": "bytes", "name": "newEncryptedScore", "type": "bytes"}
+      {"internalType": "euint8", "name": "_newScore", "type": "uint256"}
     ],
     "name": "updateScore",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
-  // Check if score meets threshold
+  {
+    "inputs": [],
+    "name": "getMyScore",
+    "outputs": [{"internalType": "euint8", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getRiskLevel",
+    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
   {
     "inputs": [
-      {"internalType": "address", "name": "patient", "type": "address"},
-      {"internalType": "uint256", "name": "threshold", "type": "uint256"}
+      {"internalType": "address", "name": "user", "type": "address"}
     ],
-    "name": "verifyThreshold",
+    "name": "hasScore",
     "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
     "stateMutability": "view",
     "type": "function"
   },
-  // Check if user has score
   {
     "inputs": [
-      {"internalType": "address", "name": "", "type": "address"}
+      {"internalType": "uint256", "name": "threshold", "type": "uint256"}
     ],
-    "name": "hasScore",
-    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "name": "checkQualification",
+    "outputs": [{"internalType": "ebool", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "protocolId",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
     "stateMutability": "view",
     "type": "function"
   }
 ];
 
 export const MEDISHARE_ABI = [
-  // Share encrypted health data
   {
     "inputs": [
-      {"internalType": "bytes", "name": "encryptedBloodSugar", "type": "bytes"},
-      {"internalType": "bytes", "name": "encryptedCholesterol", "type": "bytes"},
-      {"internalType": "bytes", "name": "encryptedBMI", "type": "bytes"}
+      {"internalType": "euint32", "name": "_bloodSugar", "type": "uint256"},
+      {"internalType": "euint32", "name": "_cholesterol", "type": "uint256"},
+      {"internalType": "euint32", "name": "_bmi", "type": "uint256"}
     ],
     "name": "shareData",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
-  // Check if data is shared
   {
     "inputs": [
-      {"internalType": "address", "name": "", "type": "address"}
+      {"internalType": "address", "name": "user", "type": "address"}
     ],
     "name": "isDataShared",
     "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
     "stateMutability": "view",
     "type": "function"
   },
-  // Opt out
   {
     "inputs": [],
     "name": "optOut",
@@ -78,7 +91,6 @@ export const MEDISHARE_ABI = [
 ];
 
 export const MEDIVAULT_ABI = [
-  // Execute research query
   {
     "inputs": [
       {"internalType": "uint256", "name": "ageMin", "type": "uint256"},

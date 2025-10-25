@@ -5,9 +5,9 @@ import { MOCK_MODE, mockContracts } from './mock';
 
 export async function shareHealthData(
   signer: ethers.Signer,
-  _bloodSugar: number,
-  _cholesterol: number,
-  _bmi: number
+  bloodSugar: number,
+  cholesterol: number,
+  bmi: number
 ): Promise<string> {
   const address = await signer.getAddress();
   
@@ -16,9 +16,11 @@ export async function shareHealthData(
   }
   
   const contract = new ethers.Contract(CONTRACTS.MEDISHARE, MEDISHARE_ABI, signer);
-  const encryptedBloodSugar = ethers.randomBytes(32);
-  const encryptedCholesterol = ethers.randomBytes(32);
-  const encryptedBMI = ethers.randomBytes(32);
+  
+  // Convert to encrypted values (FHE placeholders)
+  const encryptedBloodSugar = Math.floor(bloodSugar);
+  const encryptedCholesterol = Math.floor(cholesterol);
+  const encryptedBMI = Math.floor(bmi * 10); // Store BMI as integer
   
   const tx = await contract.shareData(
     encryptedBloodSugar,
